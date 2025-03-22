@@ -6,7 +6,7 @@ In web application development, there are two key areas: frontend and backend. L
 The backend is an application running on a remote server. It is always active and waiting for client requests. For example, you can send GET requests to fetch data directly from a browser. Try accessing a backend for a to-do list application:
 
 ```
-http://localhost:3000/todos?user=John
+http://ec2-51-20-136-135.eu-north-1.compute.amazonaws.com:3000/todos?user=John
 ```
 
 In this request, the user's name is passed as a parameter, and the server responds with a JSON object containing their to-do list:
