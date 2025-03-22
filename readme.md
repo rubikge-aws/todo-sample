@@ -37,4 +37,4 @@ HTML files can be opened in a browser without additional setup. Simply replace t
 ### Further Development
 To create a fully functional application, you can add the ability to edit the to-do list and send updates to the server using POST requests (which cannot be sent through the browser's address bar). An improved frontend will ensure a smooth user experience, while the backend will securely store and process data.
 
-A complete example of a frontend application can be found in index.html.
+A complete example of a frontend application can be found in [index.html](https://github.com/rubikge/todo-sample/blob/main/index.html).
