@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+    <style>
+        /* Main layout and general styling */
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        /* Header styling */
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        /* Form styling for adding new todos */
+        .add-todo-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Input field styling */
+        .add-todo-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        /* Add button styling with hover effect */
+        .add-todo-button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+
+        .add-todo-button:hover {
+            background-color: #45a049;
+        }
+
+        /* Todo list container styling */
+        .todo-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        /* Individual todo item styling with hover effect */
+        .todo-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+
+        .todo-item:hover {
+            transform: translateX(5px);
+        }
+
+        /* Completed todo item styling */
+        .todo-item.completed {
+            background-color: #f8f8f8;
+        }
+
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        /* Checkbox styling */
+        .checkbox {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        /* Todo text styling */
+        .todo-text {
+            flex-grow: 1;
+            margin: 0;
+        }
+
+        /* Delete button styling with hover effect */
+        .delete-button {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .delete-button:hover {
+            background-color: #cc0000;
+        }
+
+        /* Loading state styling */
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Error message styling */
+        .error {
+            color: #ff4444;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* User label styling in top-left corner */
+        .user-label {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Mode indicator styling */
+        .offline-mode {
+            color: #ff4444;
+            font-size: 14px;
+        }
+        
+        .online-mode {
+            color: #13b66d;
+            font-size: 14px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- User information display -->
+    <div class="user-label">
+        <span>User: Guest</span>
+        <span class="offline-mode">Offline Mode</span>
+        <span class="online-mode">Server Mode</span>
+    </div>
+    <h1>Todo List</h1>
+    <!-- Form for adding new todos -->
+    <form class="add-todo-form" onsubmit="addNewTodo(event)">
+        <input type="text" class="add-todo-input" placeholder="Enter new task..." required>
+        <button type="submit" class="add-todo-button">Add new item</button>
+    </form>
+    <!-- Container for todo items -->
+    <div id="todos-container">
+        <p class="loading">Loading todos...</p>
+    </div>
+
+    <script>
+        let todos = [];
+
+        // Get user from URL parameters
+        const user = new URLSearchParams(window.location.search).get('user');
+        const isGuest = !user;
+        
+        // Update UI based on user status
+        if (!isGuest) {
+            document.querySelector('.user-label span:first-child').textContent = `User: ${user}`;
+            document.querySelector('.offline-mode').style.display = 'none';
+            document.querySelector('.online-mode').style.display = 'block';
+        }
+
+        // Fetch todos from server or use local data for guests
+        async function fetchTodos() {          
+            if (isGuest) {
+                // Default todos for guest mode
+                setTodos([
+                    {
+                        "title": "Complete project documentation",
+                        "completed": false
+                    },
+                    {
+                        "title": "Review pull requests",
+                        "completed": false
+                    },
+                    {
+                        "title": "Update dependencies",
+                        "completed": false
+                    }
+                ]);
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/todos?user=${encodeURIComponent(user)}`);
+                setTodos(await response.json());             
+            } catch (error) {
+                document.getElementById('todos-container').innerHTML = 'Failed to load todos';
+            }
+        }
+
+        // Update todos locally and on the server
+        async function updateTodos(updatedTodos) {
+            setTodos(updatedTodos);
+
+            // Skip server update for guest mode
+            if (isGuest) return;
+
+            try {
+                const response = await fetch(`http://localhost:3000/todos?user=${encodeURIComponent(user)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updatedTodos)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to update todos');
+                }
+            } catch (error) {
+                console.error('Error updating todos:', error);
+                alert('Failed to update todos. Please try again.');
+            }
+        }
+
+        // Handle adding new todo items
+        async function addNewTodo(event) {
+            event.preventDefault();
+            const input = event.target.querySelector('.add-todo-input');
+            const newTitle = input.value.trim();
+            
+            if (newTitle) {
+                const newTodo = {
+                    title: newTitle,
+                    completed: false
+                };
+                await updateTodos([...todos, newTodo]);
+                input.value = '';
+            }
+        }
+
+        // Handle deleting todo items
+        async function deleteTodo(index) {
+            await updateTodos(todos.filter((_, i) => i !== index));
+        }
+
+        // Handle toggling todo completion status
+        async function toggleTodo(checkbox, index) {
+            await updateTodos(todos.map((todo, i) => {
+                if (i === index) {
+                    return { ...todo, completed: checkbox.checked };
+                }
+                return todo;
+            }));
+        }
+
+        // Render todos in the UI
+        function setTodos(updatedTodos) {
+            todos = updatedTodos;
+
+            const container = document.getElementById('todos-container');
+            const todosList = document.createElement('ul');
+            todosList.className = 'todo-list';
+
+            // Display todos in reverse order (newest first)
+            [...todos].reverse().forEach((todo, index) => {
+                const li = document.createElement('li');
+                li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+                
+                li.innerHTML = `
+                    <input type="checkbox" class="checkbox" 
+                           ${todo.completed ? 'checked' : ''} 
+                           onchange="toggleTodo(this, ${todos.length - 1 - index})">
+                    <p class="todo-text">${todo.title}</p>
+                    <button class="delete-button" onclick="deleteTodo(${todos.length - 1 - index})">×</button>
+                `;
+                
+                todosList.appendChild(li);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(todosList);
+        }
+
+        // Initialize the application
+        fetchTodos();
+    </script>
+</body>
+</html> 

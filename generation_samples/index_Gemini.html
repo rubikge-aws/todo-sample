@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Todo List</title>
+</head>
+<body>
+    <h1>Todo List</h1>
+    <ul id="todo-list"></ul>
+
+    <script>
+        // Get user parameter from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const user = urlParams.get('user');
+
+        if (user) {
+            // Make request to server
+            fetch(`http://localhost:3000/todos?user=${user}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network error');
+                    }
+                    return response.json();
+                })
+                .then(todos => {
+                    // Display todo list on the page
+                    const todoList = document.getElementById('todo-list');
+                    todos.forEach(todo => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `${todo.title} (${todo.completed ? 'completed' : 'not completed'})`;
+                        todoList.appendChild(listItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const todoList = document.getElementById('todo-list');
+                    todoList.textContent = 'Failed to load todo list.';
+                });
+        } else {
+            document.getElementById('todo-list').textContent = 'User not specified.';
+        }
+    </script>
+</body>
+</html>
