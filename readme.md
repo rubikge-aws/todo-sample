@@ -3,7 +3,9 @@
 In web application development, there are two key areas: frontend and backend. Let's explore their differences.
 
 ### Backend: The Server Side
-The backend is an application running on a remote server. It is always active and waiting for client requests. For example, you can send GET requests to fetch data directly from a browser. Try accessing a backend for a to-do list application:
+The backend is an application running on a remote server. It is always active and waiting for client requests. For example, you can send GET requests to fetch data directly from a browser. Try accessing a backend for a to-do list application.
+
+Insert this link into your browser's address bar:
 
 ```
 http://ec2-51-20-136-135.eu-north-1.compute.amazonaws.com:3000/todos?user=John
@@ -32,7 +34,7 @@ Let's ask AI to generate it:
 
 > You are an experienced JavaScript developer. Write a minimal HTML page that requests a to-do list from the server, passing the `user` parameter.
 
-HTML files can be opened in a browser without additional setup. Simply replace the server address in the code with your own and run the page.
+HTML files can be opened in a browser without additional setup. Simply replace the server address in the code with the address from the link above (http://ec2-51-20-136-135.eu-north-1.compute.amazonaws.com:3000) and run the page.
 
 ### Further Development
 To create a fully functional application, you can add the ability to edit the to-do list and send updates to the server using POST requests (which cannot be sent through the browser's address bar). An improved frontend will ensure a smooth user experience, while the backend will securely store and process data.
