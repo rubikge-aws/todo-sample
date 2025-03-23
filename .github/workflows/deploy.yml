@@ -27,7 +27,7 @@ jobs:
             docker rm todo-sample-app || true
             docker run -d \
               --name todo-sample-app \
-              -p 3000:3000 \
+              --network app-network \
               -e MONGO_URI=${{ secrets.MONGO_URI }} \
               -e MONGO_DB_NAME=${{ secrets.MONGO_DB_NAME }} \
               todo-sample-app 
